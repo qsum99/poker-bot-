@@ -283,7 +283,7 @@ class PokerGame:
             if i == self.button_position:
                 position = "(BTN)"
 
-            active = "→ " if i == self.active_player_index and player.can_make_action() else "  "
+            active = ">> " if i == self.active_player_index and player.can_make_action() else "   "
 
             print(f"{active}{player.name} {position}: ${player.stack} {player.status.value}")
 

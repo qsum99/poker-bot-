@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Play Texas Hold'em Poker against AI opponents powered by CFR strategy">
+    <title>Poker AI — Texas Hold'em</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Ambient particles canvas -->
+    <canvas id="particles-canvas"></canvas>
+
+    <!-- Top bar -->
+    <header id="top-bar">
+        <div class="logo">
+            <span class="logo-icon">♠</span>
+            <span class="logo-text">POKER<span class="logo-accent">AI</span></span>
+        </div>
+        <div class="game-info">
+            <div class="info-chip" id="hand-number-display">
+                <span class="info-label">HAND</span>
+                <span class="info-value" id="hand-number">—</span>
+            </div>
+            <div class="info-chip" id="blind-display">
+                <span class="info-label">BLIND</span>
+                <span class="info-value" id="blind-amount">$20</span>
+            </div>
+        </div>
+        <button id="new-game-btn" class="btn-glow btn-gold" onclick="startNewGame()">
+            <span class="btn-icon">⟳</span> NEW GAME
+        </button>
+    </header>
+
+    <!-- Main game area -->
+    <main id="game-area">
+        <!-- Poker Table -->
+        <div id="poker-table">
+            <div id="table-felt">
+                <div id="table-logo">TEXAS HOLD'EM</div>
+
+                <!-- Pot display -->
+                <div id="pot-area">
+                    <div id="pot-chips">
+                        <div class="chip-stack" id="pot-chip-stack"></div>
+                    </div>
+                    <div id="pot-amount">
+                        <span class="pot-label">POT</span>
+                        <span class="pot-value" id="pot-value">$0</span>
+                    </div>
+                </div>
+
+                <!-- Community cards -->
+                <div id="community-cards">
+                    <div class="card-slot" id="comm-0"></div>
+                    <div class="card-slot" id="comm-1"></div>
+                    <div class="card-slot" id="comm-2"></div>
+                    <div class="card-slot" id="comm-3"></div>
+                    <div class="card-slot" id="comm-4"></div>
+                </div>
+
+                <!-- Phase indicator -->
+                <div id="phase-display">
+                    <span id="phase-text">WAITING</span>
+                </div>
+
+                <!-- Player seats -->
+                <!-- Bot 1 - Top Left -->
+                <div class="player-seat seat-top-left" id="seat-1">
+                    <div class="player-cards" id="cards-1"></div>
+                    <div class="player-panel">
+                        <div class="player-avatar">
+                            <div class="avatar-ring"></div>
+                            <span class="avatar-icon">🤖</span>
+                        </div>
+                        <div class="player-info">
+                            <div class="player-name" id="name-1">Ace</div>
+                            <div class="player-stack" id="stack-1">$1000</div>
+                        </div>
+                        <div class="player-status" id="status-1"></div>
+                        <div class="dealer-chip" id="dealer-1">D</div>
+                        <div class="player-bet" id="bet-1"></div>
+                    </div>
+                </div>
+
+                <!-- Bot 2 - Top Center -->
+                <div class="player-seat seat-top-center" id="seat-2">
+                    <div class="player-cards" id="cards-2"></div>
+                    <div class="player-panel">
+                        <div class="player-avatar">
+                            <div class="avatar-ring"></div>
+                            <span class="avatar-icon">🃏</span>
+                        </div>
+                        <div class="player-info">
+                            <div class="player-name" id="name-2">Maverick</div>
+                            <div class="player-stack" id="stack-2">$1000</div>
+                        </div>
+                        <div class="player-status" id="status-2"></div>
+                        <div class="dealer-chip" id="dealer-2">D</div>
+                        <div class="player-bet" id="bet-2"></div>
+                    </div>
+                </div>
+
+                <!-- Bot 3 - Top Right -->
+                <div class="player-seat seat-top-right" id="seat-3">
+                    <div class="player-cards" id="cards-3"></div>
+                    <div class="player-panel">
+                        <div class="player-avatar">
+                            <div class="avatar-ring"></div>
+                            <span class="avatar-icon">🎰</span>
+                        </div>
+                        <div class="player-info">
+                            <div class="player-name" id="name-3">Viper</div>
+                            <div class="player-stack" id="stack-3">$1000</div>
+                        </div>
+                        <div class="player-status" id="status-3"></div>
+                        <div class="dealer-chip" id="dealer-3">D</div>
+                        <div class="player-bet" id="bet-3"></div>
+                    </div>
+                </div>
+
+                <!-- Human Player - Bottom Center -->
+                <div class="player-seat seat-bottom-center" id="seat-0">
+                    <div class="player-panel human-panel">
+                        <div class="player-avatar human-avatar">
+                            <div class="avatar-ring human-ring"></div>
+                            <span class="avatar-icon">👤</span>
+                        </div>
+                        <div class="player-info">
+                            <div class="player-name human-name" id="name-0">You</div>
+                            <div class="player-stack" id="stack-0">$1000</div>
+                        </div>
+                        <div class="player-status" id="status-0"></div>
+                        <div class="dealer-chip" id="dealer-0">D</div>
+                        <div class="player-bet" id="bet-0"></div>
+                    </div>
+                    <div class="player-cards human-cards" id="cards-0"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Bar -->
+        <div id="action-bar" class="hidden">
+            <div id="action-buttons">
+                <button id="btn-fold" class="action-btn btn-fold" onclick="doAction('fold')">
+                    <span class="btn-key">F</span>
+                    <span class="btn-label">FOLD</span>
+                </button>
+                <button id="btn-check-call" class="action-btn btn-check" onclick="doCheckCall()">
+                    <span class="btn-key">C</span>
+                    <span class="btn-label" id="check-call-label">CHECK</span>
+                </button>
+                <button id="btn-raise" class="action-btn btn-raise" onclick="doRaise()">
+                    <span class="btn-key">R</span>
+                    <span class="btn-label" id="raise-label">RAISE</span>
+                </button>
+                <button id="btn-allin" class="action-btn btn-allin" onclick="doAction('all_in')">
+                    <span class="btn-key">A</span>
+                    <span class="btn-label" id="allin-label">ALL IN</span>
+                </button>
+            </div>
+            <div id="raise-controls" class="hidden">
+                <div id="raise-slider-container">
+                    <input type="range" id="raise-slider" min="0" max="1000" value="0" oninput="updateRaiseDisplay()">
+                    <div id="raise-amount-display">$0</div>
+                </div>
+                <div id="raise-presets">
+                    <button class="preset-btn" onclick="setRaisePreset(0.5)">½ Pot</button>
+                    <button class="preset-btn" onclick="setRaisePreset(0.75)">¾ Pot</button>
+                    <button class="preset-btn" onclick="setRaisePreset(1.0)">Pot</button>
+                    <button class="preset-btn" onclick="setRaisePreset(2.0)">2× Pot</button>
+                </div>
+                <button id="btn-confirm-raise" class="action-btn btn-confirm" onclick="confirmRaise()">
+                    CONFIRM RAISE
+                </button>
+            </div>
+        </div>
+
+        <!-- Next Hand Button (shown after showdown) -->
+        <div id="next-hand-area" class="hidden">
+            <div id="winner-announcement"></div>
+            <button id="btn-next-hand" class="btn-glow btn-gold btn-large" onclick="nextHand()">
+                NEXT HAND →
+            </button>
+        </div>
+    </main>
+
+    <!-- Action History Sidebar -->
+    <aside id="history-panel">
+        <div class="history-header">
+            <span class="history-icon">📜</span>
+            <span>ACTION LOG</span>
+        </div>
+        <div id="history-list"></div>
+    </aside>
+
+    <!-- Welcome Modal -->
+    <div id="welcome-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-logo">♠♥♦♣</div>
+            <h1 class="modal-title">POKER<span class="logo-accent">AI</span></h1>
+            <p class="modal-subtitle">Texas Hold'em — You vs 3 AI Bots</p>
+            <div class="modal-info">
+                <div class="modal-info-row">
+                    <span>🤖 Opponents</span>
+                    <span>Ace, Maverick, Viper</span>
+                </div>
+                <div class="modal-info-row">
+                    <span>💰 Starting Stack</span>
+                    <span>$1,000</span>
+                </div>
+                <div class="modal-info-row">
+                    <span>🎯 Big Blind</span>
+                    <span>$20</span>
+                </div>
+                <div class="modal-info-row">
+                    <span>🧠 AI Engine</span>
+                    <span>CFR Strategy + Monte Carlo</span>
+                </div>
+            </div>
+            <button class="btn-glow btn-gold btn-large modal-btn" onclick="startNewGame()">
+                DEAL ME IN
+            </button>
+            <div class="modal-footer">Use keyboard shortcuts: <kbd>F</kbd> Fold · <kbd>C</kbd> Check/Call · <kbd>R</kbd> Raise · <kbd>A</kbd> All In</div>
+        </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>

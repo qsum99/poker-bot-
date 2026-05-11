@@ -1,0 +1,185 @@
+/* ── Reset & Base ──────────────────────────────────────────── */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#080b12;--bg2:#0d1220;--felt:#0a3d2a;--felt-light:#0f5c3e;
+  --gold:#d4a843;--gold-light:#f0d078;--gold-dim:#8b7332;
+  --red:#e74c3c;--green:#27ae60;--blue:#3498db;--cyan:#00e5ff;
+  --text:#e8e6e3;--text-dim:#7a7d85;--glass:rgba(255,255,255,0.06);
+  --glass-border:rgba(255,255,255,0.1);--card-w:70px;--card-h:100px;
+  --radius:12px;--shadow:0 8px 32px rgba(0,0,0,0.5);
+}
+html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text)}
+
+/* ── Particles Canvas ──────────────────────────────────────── */
+#particles-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.4}
+
+/* ── Top Bar ───────────────────────────────────────────────── */
+#top-bar{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:10px 24px;background:linear-gradient(180deg,rgba(8,11,18,0.95),rgba(8,11,18,0.7));backdrop-filter:blur(12px);border-bottom:1px solid var(--glass-border)}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-icon{font-size:28px;color:var(--gold);text-shadow:0 0 20px rgba(212,168,67,0.5)}
+.logo-text{font-family:'Playfair Display',serif;font-size:22px;font-weight:800;letter-spacing:3px;color:var(--text)}
+.logo-accent{color:var(--gold)}
+.game-info{display:flex;gap:12px}
+.info-chip{background:var(--glass);border:1px solid var(--glass-border);border-radius:8px;padding:6px 14px;display:flex;flex-direction:column;align-items:center}
+.info-label{font-size:9px;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase}
+.info-value{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--gold)}
+
+/* ── Buttons ───────────────────────────────────────────────── */
+.btn-glow{border:none;cursor:pointer;font-family:'Inter',sans-serif;font-weight:700;letter-spacing:1.5px;border-radius:8px;padding:10px 22px;font-size:13px;transition:all 0.3s;position:relative;overflow:hidden}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold-dim));color:#0a0a0f;box-shadow:0 0 20px rgba(212,168,67,0.3)}
+.btn-gold:hover{transform:translateY(-2px);box-shadow:0 0 30px rgba(212,168,67,0.5)}
+.btn-large{padding:14px 36px;font-size:16px;border-radius:12px}
+.btn-icon{margin-right:6px}
+
+/* ── Game Area ─────────────────────────────────────────────── */
+#game-area{position:relative;z-index:1;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-top:56px}
+
+/* ── Poker Table ───────────────────────────────────────────── */
+#poker-table{position:relative;width:900px;height:520px}
+#table-felt{position:absolute;inset:30px;border-radius:50%;background:radial-gradient(ellipse at 50% 50%,var(--felt-light),var(--felt),#062a1c);border:6px solid var(--gold-dim);box-shadow:0 0 60px rgba(10,61,42,0.5),0 0 120px rgba(10,61,42,0.3),inset 0 0 80px rgba(0,0,0,0.3);overflow:visible}
+#table-felt::before{content:'';position:absolute;inset:-8px;border-radius:50%;border:2px solid rgba(212,168,67,0.15);pointer-events:none}
+#table-logo{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Playfair Display',serif;font-size:14px;letter-spacing:6px;color:rgba(255,255,255,0.06);text-transform:uppercase;white-space:nowrap;pointer-events:none}
+
+/* ── Pot ────────────────────────────────────────────────────── */
+#pot-area{position:absolute;top:28%;left:50%;transform:translateX(-50%);text-align:center;z-index:5}
+#pot-amount{background:rgba(0,0,0,0.5);border:1px solid var(--gold-dim);border-radius:20px;padding:4px 16px;display:inline-flex;align-items:center;gap:6px}
+.pot-label{font-size:10px;letter-spacing:2px;color:var(--text-dim)}
+.pot-value{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:var(--gold-light)}
+#pot-chip-stack{display:flex;gap:2px;justify-content:center;margin-bottom:4px}
+
+/* ── Community Cards ───────────────────────────────────────── */
+#community-cards{position:absolute;top:44%;left:50%;transform:translate(-50%,-50%);display:flex;gap:8px;z-index:5}
+.card-slot{width:var(--card-w);height:var(--card-h);border-radius:8px;background:rgba(255,255,255,0.04);border:1px dashed rgba(255,255,255,0.08)}
+
+/* ── Cards ──────────────────────────────────────────────────── */
+.card{width:var(--card-w);height:var(--card-h);border-radius:8px;position:relative;perspective:600px;cursor:default}
+.card-inner{width:100%;height:100%;position:relative;transition:transform 0.6s;transform-style:preserve-3d}
+.card.revealed .card-inner{transform:rotateY(180deg)}
+.card-front,.card-back{position:absolute;inset:0;border-radius:8px;backface-visibility:hidden}
+.card-back{background:linear-gradient(135deg,#1a0a2e,#2d1b4e);border:2px solid #3d2a5e;display:flex;align-items:center;justify-content:center;font-size:24px}
+.card-back::after{content:'♠';color:rgba(212,168,67,0.3);font-size:28px}
+.card-front{background:#fff;border:2px solid #ddd;transform:rotateY(180deg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px}
+.card-rank{font-family:'Playfair Display',serif;font-size:26px;font-weight:800;line-height:1}
+.card-suit{font-size:28px;line-height:1;margin-top:2px}
+.card-corner{position:absolute;font-size:11px;font-weight:700;line-height:1;font-family:'JetBrains Mono',monospace}
+.card-corner-top{top:4px;left:5px}
+.card-corner-bottom{bottom:4px;right:5px;transform:rotate(180deg)}
+.card.suit-hearts .card-rank,.card.suit-hearts .card-suit,.card.suit-hearts .card-corner{color:#e74c3c}
+.card.suit-diamonds .card-rank,.card.suit-diamonds .card-suit,.card.suit-diamonds .card-corner{color:#e67e22}
+.card.suit-clubs .card-rank,.card.suit-clubs .card-suit,.card.suit-clubs .card-corner{color:#2c3e50}
+.card.suit-spades .card-rank,.card.suit-spades .card-suit,.card.suit-spades .card-corner{color:#1a1a2e}
+
+/* ── Player Seats ──────────────────────────────────────────── */
+.player-seat{position:absolute;z-index:10;display:flex;flex-direction:column;align-items:center;gap:6px}
+.seat-top-left{top:-20px;left:5%;transform:translateX(0)}
+.seat-top-center{top:-40px;left:50%;transform:translateX(-50%)}
+.seat-top-right{top:-20px;right:5%;transform:translateX(0)}
+.seat-bottom-center{bottom:-60px;left:50%;transform:translateX(-50%)}
+
+.player-panel{background:var(--glass);backdrop-filter:blur(16px);border:1px solid var(--glass-border);border-radius:var(--radius);padding:10px 16px;display:flex;align-items:center;gap:10px;min-width:160px;position:relative;transition:all 0.4s}
+.player-panel.active-turn{border-color:var(--cyan);box-shadow:0 0 20px rgba(0,229,255,0.3),0 0 40px rgba(0,229,255,0.1)}
+.human-panel{border-color:rgba(212,168,67,0.3)}
+.human-panel.active-turn{border-color:var(--gold);box-shadow:0 0 25px rgba(212,168,67,0.4)}
+
+.player-avatar{position:relative;width:36px;height:36px;display:flex;align-items:center;justify-content:center}
+.avatar-ring{position:absolute;inset:-3px;border-radius:50%;border:2px solid var(--glass-border);transition:border-color 0.4s}
+.active-turn .avatar-ring{border-color:var(--cyan);animation:pulse-ring 2s infinite}
+.human-panel .avatar-ring{border-color:rgba(212,168,67,0.4)}
+.human-panel.active-turn .avatar-ring{border-color:var(--gold);animation:pulse-ring-gold 2s infinite}
+.avatar-icon{font-size:20px}
+.player-name{font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.human-name{color:var(--gold)}
+.player-stack{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--green)}
+.player-status{position:absolute;top:-8px;right:-8px;font-size:9px;padding:2px 8px;border-radius:10px;font-weight:700;letter-spacing:1px;display:none}
+.player-status.folded{display:block;background:rgba(231,76,60,0.2);color:var(--red);border:1px solid rgba(231,76,60,0.3)}
+.player-status.all-in{display:block;background:rgba(212,168,67,0.2);color:var(--gold);border:1px solid rgba(212,168,67,0.3)}
+.player-status.out{display:block;background:rgba(122,125,133,0.2);color:var(--text-dim);border:1px solid rgba(122,125,133,0.3)}
+.player-seat.winner .player-panel{border-color:var(--gold);box-shadow:0 0 30px rgba(212,168,67,0.5);animation:winner-glow 1.5s ease-in-out infinite}
+
+.dealer-chip{position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#fff,#ddd);color:#222;font-size:10px;font-weight:800;display:none;align-items:center;justify-content:center;border:2px solid var(--gold);box-shadow:0 2px 8px rgba(0,0,0,0.4)}
+.dealer-chip.visible{display:flex}
+
+.player-bet{position:absolute;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--gold-light);background:rgba(0,0,0,0.6);padding:2px 8px;border-radius:8px;display:none;white-space:nowrap}
+.seat-top-left .player-bet,.seat-top-center .player-bet,.seat-top-right .player-bet{bottom:-28px;left:50%;transform:translateX(-50%)}
+.seat-bottom-center .player-bet{top:-28px;left:50%;transform:translateX(-50%)}
+
+.player-cards{display:flex;gap:4px}
+.player-cards .card{width:58px;height:84px;--card-w:58px;--card-h:84px}
+.human-cards .card{width:80px;height:114px;--card-w:80px;--card-h:114px}
+.human-cards .card-rank{font-size:32px}
+.human-cards .card-suit{font-size:34px}
+
+/* ── Action Bar ────────────────────────────────────────────── */
+#action-bar{position:fixed;bottom:0;left:0;right:0;z-index:50;background:linear-gradient(180deg,rgba(8,11,18,0),rgba(8,11,18,0.95) 30%);padding:20px 24px 24px;display:flex;flex-direction:column;align-items:center;gap:12px}
+#action-buttons{display:flex;gap:10px;justify-content:center}
+.action-btn{border:none;cursor:pointer;font-family:'Inter',sans-serif;font-weight:700;font-size:13px;letter-spacing:1.5px;padding:12px 28px;border-radius:10px;display:flex;align-items:center;gap:8px;transition:all 0.25s;position:relative;overflow:hidden;text-transform:uppercase}
+.action-btn:hover{transform:translateY(-2px)}
+.action-btn:active{transform:translateY(0)}
+.btn-fold{background:linear-gradient(135deg,rgba(231,76,60,0.15),rgba(231,76,60,0.05));color:var(--red);border:1px solid rgba(231,76,60,0.3)}
+.btn-fold:hover{box-shadow:0 0 20px rgba(231,76,60,0.3);border-color:var(--red)}
+.btn-check{background:linear-gradient(135deg,rgba(52,152,219,0.15),rgba(52,152,219,0.05));color:var(--blue);border:1px solid rgba(52,152,219,0.3)}
+.btn-check:hover{box-shadow:0 0 20px rgba(52,152,219,0.3);border-color:var(--blue)}
+.btn-raise{background:linear-gradient(135deg,rgba(39,174,96,0.15),rgba(39,174,96,0.05));color:var(--green);border:1px solid rgba(39,174,96,0.3)}
+.btn-raise:hover{box-shadow:0 0 20px rgba(39,174,96,0.3);border-color:var(--green)}
+.btn-allin{background:linear-gradient(135deg,rgba(212,168,67,0.2),rgba(212,168,67,0.05));color:var(--gold);border:1px solid rgba(212,168,67,0.3)}
+.btn-allin:hover{box-shadow:0 0 20px rgba(212,168,67,0.4);border-color:var(--gold)}
+.btn-confirm{background:linear-gradient(135deg,var(--green),#1e8449);color:#fff;border:none;padding:10px 32px;margin-top:4px}
+.btn-key{font-family:'JetBrains Mono',monospace;font-size:10px;background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px}
+
+/* ── Raise Controls ────────────────────────────────────────── */
+#raise-controls{display:flex;flex-direction:column;align-items:center;gap:8px;animation:slideUp 0.3s ease}
+#raise-slider-container{display:flex;align-items:center;gap:12px;width:400px}
+#raise-slider{flex:1;-webkit-appearance:none;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--green),var(--gold));outline:none;cursor:pointer}
+#raise-slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--gold);border:2px solid #fff;cursor:pointer;box-shadow:0 0 10px rgba(212,168,67,0.5)}
+#raise-amount-display{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:var(--gold);min-width:80px;text-align:center}
+#raise-presets{display:flex;gap:6px}
+.preset-btn{background:var(--glass);border:1px solid var(--glass-border);color:var(--text-dim);padding:4px 12px;border-radius:6px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;transition:all 0.2s}
+.preset-btn:hover{border-color:var(--gold);color:var(--gold)}
+
+/* ── Next Hand Area ────────────────────────────────────────── */
+#next-hand-area{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);z-index:50;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px}
+#winner-announcement{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--gold);text-shadow:0 0 20px rgba(212,168,67,0.4);animation:fadeInUp 0.5s ease}
+
+/* ── History Panel ─────────────────────────────────────────── */
+#history-panel{position:fixed;right:0;top:56px;bottom:0;width:220px;z-index:50;background:rgba(8,11,18,0.9);backdrop-filter:blur(12px);border-left:1px solid var(--glass-border);display:flex;flex-direction:column;overflow:hidden}
+.history-header{padding:12px 16px;font-size:11px;font-weight:700;letter-spacing:2px;color:var(--text-dim);border-bottom:1px solid var(--glass-border);display:flex;align-items:center;gap:8px}
+.history-icon{font-size:14px}
+#history-list{flex:1;overflow-y:auto;padding:8px}
+#history-list::-webkit-scrollbar{width:4px}
+#history-list::-webkit-scrollbar-thumb{background:var(--glass-border);border-radius:2px}
+.history-item{padding:6px 10px;border-radius:6px;margin-bottom:4px;font-size:11px;display:flex;justify-content:space-between;align-items:center;background:var(--glass)}
+.history-item .h-player{font-weight:600;color:var(--text)}
+.history-item .h-action{color:var(--text-dim)}
+.history-item .h-amount{font-family:'JetBrains Mono',monospace;color:var(--gold);font-weight:600}
+.history-phase{padding:4px 10px;margin:8px 0 4px;font-size:9px;font-weight:700;letter-spacing:2px;color:var(--cyan);text-transform:uppercase}
+
+/* ── Modal ─────────────────────────────────────────────────── */
+.modal-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.8);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center}
+.modal-content{background:linear-gradient(135deg,var(--bg2),var(--bg));border:1px solid var(--glass-border);border-radius:24px;padding:48px;text-align:center;max-width:420px;width:90%;box-shadow:var(--shadow)}
+.modal-logo{font-size:42px;letter-spacing:8px;margin-bottom:12px;background:linear-gradient(135deg,var(--red),var(--gold),var(--blue),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.modal-title{font-family:'Playfair Display',serif;font-size:36px;font-weight:800;letter-spacing:4px;margin-bottom:4px}
+.modal-subtitle{color:var(--text-dim);font-size:14px;margin-bottom:24px}
+.modal-info{background:var(--glass);border:1px solid var(--glass-border);border-radius:12px;padding:16px;margin-bottom:24px;text-align:left}
+.modal-info-row{display:flex;justify-content:space-between;padding:6px 0;font-size:13px;border-bottom:1px solid var(--glass-border)}
+.modal-info-row:last-child{border:none}
+.modal-info-row span:first-child{color:var(--text-dim)}
+.modal-info-row span:last-child{font-weight:600}
+.modal-btn{width:100%;margin-bottom:16px}
+.modal-footer{font-size:11px;color:var(--text-dim)}
+.modal-footer kbd{background:var(--glass);border:1px solid var(--glass-border);padding:1px 5px;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:10px}
+
+/* ── Toast ─────────────────────────────────────────────────── */
+.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:300;background:rgba(231,76,60,0.9);color:#fff;padding:10px 24px;border-radius:8px;font-size:13px;font-weight:600;animation:fadeInDown 0.3s ease}
+
+/* ── Utilities ─────────────────────────────────────────────── */
+.hidden{display:none!important}
+
+/* ── Animations ────────────────────────────────────────────── */
+@keyframes pulse-ring{0%,100%{box-shadow:0 0 0 0 rgba(0,229,255,0.4)}50%{box-shadow:0 0 0 8px rgba(0,229,255,0)}}
+@keyframes pulse-ring-gold{0%,100%{box-shadow:0 0 0 0 rgba(212,168,67,0.4)}50%{box-shadow:0 0 0 8px rgba(212,168,67,0)}}
+@keyframes winner-glow{0%,100%{box-shadow:0 0 20px rgba(212,168,67,0.3)}50%{box-shadow:0 0 40px rgba(212,168,67,0.6)}}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeInDown{from{opacity:0;transform:translate(-50%,-20px)}to{opacity:1;transform:translate(-50%,0)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes dealCard{from{opacity:0;transform:translateY(-40px) scale(0.8)}to{opacity:1;transform:translateY(0) scale(1)}}
+.card-deal{animation:dealCard 0.4s ease forwards}
